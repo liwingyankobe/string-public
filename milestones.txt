@@ -1,0 +1,6 @@
+01-20	21-30	31-40	41-49	50	Winners
+20	Special Relativists
+30	Quantum Physicists
+40	General Relativists
+49	Quantum Field Theorists
+50	String Theorists
