@@ -1,0 +1,41 @@
+This is a public version of my String bot. Feel free to use it to build the bot for your riddles! Here are the steps to follow:
+
+1. Edit bot_auto.py. Follow the "#" instructions and insert information.
+
+2. Edit the txt's: achievements, levels, milestones, secrets, unpw
+Format:
+achievements.txt: [name]	[path]
+
+levels.txt: [name]	[answer path]
+Notice that the answer path also serves as the front path of next level.
+
+milestones.txt: The first row is the names appeared in !stat. Then [level name]	[milestone name].
+It must contain the final level. The names in !stat must match with milestones.
+
+secrets.txt: same as levels.txt
+
+unpw.txt: [name of level with un/pw as answer]	[un/pw]
+E.g. if one writes down
+
+02	infinite/forever
+06	kobe/li
+
+that means levels 03-06 are locked by infinite/forever. Use 'None' if there is no un/pw.
+
+3. Put achievement images as JPG in /cheevos. They must have the names in achievements.txt.
+
+4. Run bot_auto.py.
+
+5. Put /login in your website. Edit login_original.js by following the "//" instructions.
+
+6. Put stringbot_original.js in your website and edit it. Include it on every page you want to trigger the bot.
+
+7. It is recommended to obfuscate the js files.
+
+Some tips if you are using Heroku:
+
+1. The config files are already here. Just push all files onto Heroku.
+
+2. Give them billing info such that you have enough free hours. No money would be deducted.
+
+3. Install an addon (e.g. New Relic) to ping your bot every half hour.

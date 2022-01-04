@@ -104,7 +104,7 @@ async def send(ctx,channel_name,message):
     else:
         await ctx.send('I only listen to the creator!')
         
-@bot.command(name='recall',help='Show info of the levels you solved')
+@bot.command(name='recall',help='Show info of the main levels you reached')
 async def recall(ctx,level):
     if (level in level_names) or (level == 'end'):
         if level == 'end':
@@ -209,6 +209,8 @@ def header(response):
     response.headers['Access-Control-Allow-Headers'] = '*'
     return response
 
+#be careful if your riddle is within a folder
+
 @app.route('/', methods=['POST'])
 async def handle():
     did = (await request.get_json())["id"]
@@ -221,6 +223,7 @@ async def handle():
         await achievement(did,ans)
     return 'OK', 200
 
+#settings for Heroku, change them if yours is not
 port = int(os.environ.get("PORT", 5000))        
 bot.loop.create_task(app.run_task(host='0.0.0.0',port=port))
 bot.run(TOKEN)

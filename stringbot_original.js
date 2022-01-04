@@ -1,3 +1,4 @@
+// put this js in all pages where you want to trigger the bot
 function readCookie(name) {
 	var nameEQ = name + "=";
 	var ca = document.cookie.split(';');
@@ -13,7 +14,7 @@ window.onload = () => {
 	const did = readCookie('id')
 	if (did != null) {
 		const path = window.location.pathname
-		const uri = ''
+		const uri = '' // insert bot interaction URL
 		const data = {id: did, ans: path}
 		fetch(uri, {
   			method: 'POST',
