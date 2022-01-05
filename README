@@ -1,5 +1,7 @@
 This is a public version of my String bot. Feel free to use it to build the bot for your riddles! Here are the steps to follow:
 
+0. Set up a bot in Discord Developer Portal. In OAuth2->URL Generator, select "bot"->"Administrator" to add the bot to your server. Get the tokens there.
+
 1. Edit bot_auto.py. Follow the "#" instructions and insert information.
 
 2. Edit the txt's: achievements, levels, milestones, secrets, unpw
@@ -26,7 +28,7 @@ that means levels 03-06 are locked by infinite/forever. Use 'None' if there is n
 
 4. Run bot_auto.py.
 
-5. Put /login in your website. Edit login_original.js by following the "//" instructions.
+5. Put /login in your website. Edit login_original.js by following the "//" instructions. In OAuth2->General enter the redirection URL, then choose "identify" in URL Generator.
 
 6. Put stringbot_original.js in your website and edit it. Include it on every page you want to trigger the bot.
 
