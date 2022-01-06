@@ -106,7 +106,12 @@ async def send(ctx,channel_name,message):
         
 @bot.command(name='recall',help='Show info of the main levels you reached')
 async def recall(ctx,level):
-    if (level in level_names) or (level == 'end'):
+    if ctx.guild and not ctx.message.author.guild_permissions.administrator:
+        author = ctx.message.author
+        await ctx.message.delete()
+        text = 'I only listen to you in PM!'
+        await author.send(text)
+    elif (level in level_names) or (level == 'end'):
         if level == 'end':
             level_id = level_count
         else:
