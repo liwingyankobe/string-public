@@ -14,7 +14,7 @@ window.onload = () => {
 	const did = readCookie('id')
 	if (did != null) {
 		const path = window.location.pathname
-		const uri = '' // insert bot interaction URL
+		const uri = '' // insert bot interaction URL e.g. https://the-string-harmony-bot.herokuapp.com/
 		const data = {id: did, ans: path}
 		fetch(uri, {
   			method: 'POST',

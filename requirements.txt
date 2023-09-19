@@ -1,2 +1,2 @@
-discord.py==1.7.3
-quart==0.16.2
+discord.py==2.3.2
+quart==0.18.4

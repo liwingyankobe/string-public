@@ -5,7 +5,7 @@ window.onload = () => {
     		data.append('client_id', ''); // insert bot client id
     		data.append('client_secret', ''); // insert bot client secret
     		data.append('grant_type', 'authorization_code');
-    		data.append('redirect_uri', ""); // insert redirection URL
+    		data.append('redirect_uri', ""); // insert your login URL e.g. https://thestringharmony.com/login
     		data.append('scope', 'identify');
     		data.append('code', code);
 
@@ -20,7 +20,7 @@ window.onload = () => {
             		}
             		axios.get("https://discordapp.com/api/users/@me",config)
                 	.then(response=>{
-                    		document.cookie = "id=" + response.data.id + ";Domain=.thestringharmony.com;Max-Age=31536000;Secure;Path=/" // change domain name
+                    		document.cookie = "id=" + response.data.id + ";Domain=.thestringharmony.com;Max-Age=31536000;Secure;Path=/" // change domain name to your riddle
 				document.getElementById("result").innerHTML = "Login successfully.<br />Close this window and start playing!"
                 	})
                 })

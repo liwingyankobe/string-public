@@ -1,5 +1,6 @@
 import discord
 import os
+import asyncio
 from discord.ext import commands
 from quart import Quart, request
 
@@ -9,15 +10,23 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='!',intents=intents)
 app = Quart(__name__)
 
+#read level data from text files
+#TODO: database support
+
+site_url = '' #insert site URL e.g. https://thestringharmony.com
+#can include folder if your whole riddle is within one folder
+
 f = open('levels.txt','r')
 level_names = []
 level_answers = []
+max_namelen = 32
 while True:
     line = f.readline().rstrip('\n')
     if not line:
         break
     data = line.split('\t')
     level_names.append(data[0])
+    max_namelen = min(max_namelen, 29 - len(data[0]))
     level_answers.append(data[1])
 f.close()
 level_count = len(level_names)
@@ -67,8 +76,10 @@ f.close()
 
 secret_count = len(secret_names)
 role_secret = []
+role_color = []
 for i in range(secret_count):
     role_secret.append('solved-' + secret_names[i])
+    role_color.append('color-' + secret_names[i])
     
 f = open('achievements.txt','r')
 ac_names = []
@@ -92,7 +103,28 @@ async def on_ready():
 async def on_command_error(ctx, error):
     if isinstance(error, commands.errors.MissingRequiredArgument):
         await ctx.send('Invalid command...')
-    
+
+#append level progress when changing nickname        
+@bot.event
+async def on_member_update(before, after):
+    n = after.nick
+    if n == None:
+        n = after.global_name
+    role = None
+    role_id = -1
+    while (not role) and (role_id < (level_count - 1)):
+        role_id = role_id + 1
+        role = discord.utils.get(after.roles, name=role_list[role_id])
+    if role:
+        if role_id == (level_count - 1):
+            newn = ' \U0001F3C5'
+        else:
+            newn = ' [' + level_names[role_id+1] + ']'
+        if n.find(newn) == -1:
+            finaln = n[:max_namelen] + newn
+            await after.edit(nick=finaln)
+
+#send messages to the server with bot account, creator only    
 @bot.command(name='send')
 async def send(ctx,channel_name,message):
     member = guild.get_member(int(ctx.author.id))
@@ -103,9 +135,28 @@ async def send(ctx,channel_name,message):
         await ctx.send('Message sent!')
     else:
         await ctx.send('I only listen to the creator!')
-        
-@bot.command(name='recall',help='Show info of the main levels you reached')
+
+#register pages in case the automatic feature does not work
+@bot.command(name='reach',help='Register the solution pages you reached')
+async def reach(ctx,ans):
+    if ctx.guild and not ctx.message.author.guild_permissions.administrator:
+        author = ctx.message.author
+        await ctx.message.delete()
+        text = 'I only listen to you in PM!'
+        await author.send(text)
+    else:
+        did = ctx.author.id
+        if ans in level_answers:
+            await solve(did,ans)
+        elif ans in secret_answers:
+            await secret(did,ans)
+        elif ans in ac_answers:
+            await achievement(did, ans)
+
+#show level info, starting pages for main levels and solution pages for secret levels
+@bot.command(name='recall',help='Show info of the levels you reached/solved')
 async def recall(ctx,level):
+    member = guild.get_member(int(ctx.author.id))
     if ctx.guild and not ctx.message.author.guild_permissions.administrator:
         author = ctx.message.author
         await ctx.message.delete()
@@ -116,10 +167,9 @@ async def recall(ctx,level):
             level_id = level_count
         else:
             level_id = level_names.index(level)
-        member = guild.get_member(int(ctx.author.id))
         role = None
         role_id = -1
-        while (not role) and (role_id < level_count):
+        while (not role) and (role_id < level_count - 1):
             role_id = role_id + 1
             role = discord.utils.get(member.roles, name=role_list[role_id])
         if ((not role) and (level_id > 0)) or (role and role_id < (level_id - 1)):
@@ -129,18 +179,26 @@ async def recall(ctx,level):
             while (unpw >= 0) and (unpw_id[unpw] >= level_id):
                 unpw = unpw - 1
             if level_id == 0:
-                output = '' #insert level 1 URL
+                output = site_url + '' #insert path of first level e.g. /welcome/start.htm
             else:
-                output = '' + level_answers[level_id-1] #insert site path
+                output = site_url + level_answers[level_id-1]
             if unpw == -1:
                 output += '\nUN/PW: None'
             else:
                 output += '\nUN/PW: ' + unpw_answers[unpw]
             await ctx.send(output)
+    elif level in secret_names:
+        level_id = secret_names.index(level)
+        role = discord.utils.get(member.roles, name=role_secret[level_id])
+        if not role:
+            await ctx.send('You haven\'t solved the level!')
+        else:
+            output = 'Solution: ' + site_url + secret_answers[level_id]
+            await ctx.send(output)
     else:
         await ctx.send('Wrong level name!')
                 
-        
+#show player statistics according to milestones        
 @bot.command(name='stat',help='Show player statistics')
 async def stat(ctx):
     num = []
@@ -154,6 +212,30 @@ async def stat(ctx):
         output = output + '\n' + stat_name[i] + ': ' + str(num[i])
     await ctx.send(output)
 
+#change nickname color according to solved secret levels    
+@bot.command(name='color',help='Change the color of your name')
+async def color(ctx,level):
+    member = guild.get_member(int(ctx.author.id))
+    if level in secret_names:
+        secret_id = secret_names.index(level)
+        roles = discord.utils.get(member.roles, name=role_secret[secret_id])
+        if roles:
+            role = None
+            role_id = -1
+            while (not role) and (role_id < (secret_count - 1)):
+                role_id = role_id + 1
+                role = discord.utils.get(member.roles, name=role_color[role_id])
+            if role:
+                await member.remove_roles(role)
+            role = discord.utils.get(guild.roles, name=role_color[secret_id])
+            await member.add_roles(role)
+            await ctx.send('Username color updated!')
+        else:
+            await ctx.send('You haven\'t solved the level!')
+    else:
+        await ctx.send('Wrong secret level name!')
+
+#automated function for solving main levels
 async def solve(did,ans):
     level_id = level_answers.index(ans)
     level = level_names[level_id]
@@ -165,16 +247,19 @@ async def solve(did,ans):
     if (level_id == 0 and len(member.roles) == 1) or role:
         if role:
             await member.remove_roles(role)
+            n = member.nick[:-3-len(level)]
+        else:
+            n = member.nick
+            if n == None:
+                n = member.global_name
+        await member.edit(nick=n[:max_namelen])
         if level_id == (level_count - 1):
-            nickname = member.name + ' \U0001F3C5'
             output = 'You have successfully solved level ' + '**' + level + '**!\n' \
             + 'You have **completed** the game. Congrats!! \U0001F3C5'
         else:
             role = discord.utils.get(guild.roles, name=role_list[level_id])
             await member.add_roles(role)
-            nickname = member.name + ' [' + level_names[level_id + 1] + ']'
             output = 'You have successfully solved level ' + '**' + level + '**!'
-        await member.edit(nick=nickname)
         await member.send(output)
         for mile in range(len(mile_id)):
             if level_id == mile_id[mile]:
@@ -184,7 +269,8 @@ async def solve(did,ans):
                 output = '<@' + str(member.id) + '> has completed level **' + level_names[mile_id[mile]] + '**' \
                 + ' and become one of **@' + mile_role[mile] + '**. Congrats!!'
                 await channel.send(output)
-                
+ 
+#automated function for solving secret levels
 async def secret(did,ans):
     level_id = secret_answers.index(ans)
     level = secret_names[level_id]
@@ -200,6 +286,7 @@ async def secret(did,ans):
         output = '<@' + str(member.id) + '> has completed level **' + level + '**. Congrats!!'
         await channel.send(output)
 
+#automated function for finding achievements
 async def achievement(did,ans):
     ac_id = ac_answers.index(ans)
     ac = ac_names[ac_id]
@@ -208,13 +295,12 @@ async def achievement(did,ans):
     img = 'cheevos/' + ac + '.jpg'
     await member.send(output,file=discord.File(img))               
 
+#avoiding CORS error
 @app.after_request
 def header(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Headers'] = '*'
     return response
-
-#be careful if your riddle is within a folder
 
 @app.route('/', methods=['POST'])
 async def handle():
@@ -228,7 +314,11 @@ async def handle():
         await achievement(did,ans)
     return 'OK', 200
 
-#settings for Heroku, change them if yours is not
-port = int(os.environ.get("PORT", 5000))        
-bot.loop.create_task(app.run_task(host='0.0.0.0',port=port))
-bot.run(TOKEN)
+#settings for Heroku, change them if your host is not Heroku
+async def main():
+    port = int(os.environ.get("PORT", 5000))
+    async with bot:
+        bot.loop.create_task(app.run_task(host='0.0.0.0',port=port))
+        await bot.start(TOKEN)
+
+asyncio.run(main())
