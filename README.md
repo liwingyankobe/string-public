@@ -74,6 +74,10 @@ In `OAuth2->General`, get the client ID and client secret. Enter the login URL i
 5. It is recommended to obfuscate the js files.
 6. Set up the corresponding channels and roles in Discord.
 
+The bot has some extra commands for creators:
+
+1. `!send [channel] [message]`: Send messages to your server using the bot's account
+
 ## To-do list
 
 - Replace txt files with database
