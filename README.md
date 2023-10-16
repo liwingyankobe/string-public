@@ -1,4 +1,7 @@
-# String - The Discord bot for online riddles
+# String - Track your riddle progress
+
+(**IMPORTANT**: This is a previous version of the application intended for public use only.
+Please see [here](https://github.com/liwingyankobe/string) for the latest version.)
 
 **String** is a Discord bot (with a web API) for online riddles that
 
@@ -64,6 +67,7 @@ See the example files for references. Note that each field is separated by `Tab`
 6. Put achievement images as JPG in `cheevos`. They must have the same names as in `achievements.txt`.
 7. Host the files on a cloud platform.
 [Heroku](https://www.heroku.com) is recommended since all the configuration files are included here.
+  - If you are using the Eco plan, install an addon (e.g. New Relic) to ping your bot every half hour.
 8. Run `bot_auto.py`
 9. Upload `login` folder onto your website.
 1. Go back to [Discord Developer](https://discord.com/developers).
@@ -80,9 +84,7 @@ The bot has some extra commands for creators:
 
 ## To-do list
 
-- Replace txt files with database
-- Leaderboard
-- Save and check progress for achievements
+- Update public version to the latest version
 - Automate initialization and make better interface for creators
 
 ## Contact me
